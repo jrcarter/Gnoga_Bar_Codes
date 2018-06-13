@@ -22,10 +22,12 @@ procedure Gnoga_Bar_Codes_Test is
    Quit   : Gnoga.Gui.Element.Common.Button_Type;
 
    procedure Generate (Object : in out Gnoga.Gui.Base.Base_Type'Class) is
+      -- Empty
    begin -- Generate
       Code.Generate (Kind => Bar_Codes.Code_128, Text => Input.Box.Value);
    exception -- Generate
    when Bar_Codes.Cannot_Encode =>
+      Input.Box.Value (Value => "");
       Code.Generate (Kind => Bar_Codes.Code_128, Text => "");
    end Generate;
 
@@ -34,6 +36,11 @@ procedure Gnoga_Bar_Codes_Test is
    begin -- Quit_Now
       Gnoga.Application.Singleton.End_Application;
    end Quit_Now;
+
+   Max_Length : constant := 40;
+
+   Code_Width  : constant Positive := 2 * Bar_Codes.Fitting (Bar_Codes.Code_128, (1 .. Max_Length => 'a') ).Width;
+   Code_Height : constant Positive := Code_Width / 4 + Boolean'Pos (Code_Width rem 4 /= 0);
 begin -- Gnoga_Bar_Codes_Test
    Gnoga.Application.Title ("Gnoga Bar-Codes Test");
    Gnoga.Application.HTML_On_Close ("Gnoga Bar-Codes Test ended.");
@@ -42,10 +49,11 @@ begin -- Gnoga_Bar_Codes_Test
 
    View.Create (Parent => Window);
    View.Text_Alignment (Value => Gnoga.Gui.Element.Center);
-   Code.Create (Parent => View, Width => 400, Height => 100);
+   View.New_Line;
+   Code.Create (Parent => View, Width => Code_Width, Height => Code_Height);
    View.New_Line;
 
-   Input.Create (Form => View, Label => "Text :", Width => 20);
+   Input.Create (Form => View, Label => "Text (Max " & Integer'Image (Max_Length) & "):", Width => 20);
 
    Gen.Create (Parent => View, Content => "Generate");
    Gen.On_Click_Handler (Handler => Generate'Unrestricted_Access);
