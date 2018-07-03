@@ -22,6 +22,8 @@ package body Gnoga_Bar_Codes is
       Code.Box := (Left => 0, Bottom => Height, Width => Width, Height => Height);
    end Create;
 
+   Fit : Bar_Codes.Module_Box;
+
    procedure Generate (Code : in out Bar_Code; Kind : In Bar_Codes.Kind_Of_Code; Text : in String) is
       Rectangle  : constant Gnoga.Types.Rectangle_Type := (X => 0, Y => 0, Width => Code.Box.Width, Height => Code.Box.Height);
 
@@ -39,6 +41,7 @@ package body Gnoga_Bar_Codes is
          Last := Last - 1;
       end loop Truncate;
 
+      Fit := Bar_Codes.Fitting (Kind, Text (Text'First .. Last) );
       Code.Kind := Kind;
       Code.Draw (Kind => Kind, Text => Text (Text'First .. Last) );
    end Generate;
@@ -46,7 +49,10 @@ package body Gnoga_Bar_Codes is
    procedure Filled_Rectangle (Code : in Bar_Code; Shape : in Bar_Codes.Module_Box) is
       use type Bar_Codes.Real;
 
-      Rectangle : Gnoga.Types.Rectangle_Type := (X => 2 * Shape.Left, Width => 2 * Shape.Width, others => <>);
+      Scale_X : constant Positive := Code.Box.Width / Fit.Width;
+      Scale_Y : constant Positive := Code.Box.Height / Fit.Height;
+
+      Rectangle : Gnoga.Types.Rectangle_Type;
 
       Context : Gnoga.Gui.Element.Canvas.Context_2D.Context_2D_Type;
    begin -- Filled_Rectangle
@@ -55,10 +61,13 @@ package body Gnoga_Bar_Codes is
 
       case Code.Kind is
       when Bar_Codes.Code_128 => -- And all other 1D bar codes
-         Rectangle.Y := 0;
-         Rectangle.Height := Code.Box.Height;
+         Rectangle := (X => 2 * Shape.Left, Y => 0, Width => 2 * Shape.Width, Height => Code.Box.Height);
+      when Bar_Codes.Code_QR => -- And all other 2D bar codes
+         Rectangle := (X      => Scale_X * Shape.Left,
+                       Y      => Code.Box.Bottom - Scale_Y * Shape.Bottom - Scale_Y * Shape.Height,
+                       Width  => Scale_X * Shape.Width,
+                       Height => Scale_Y * Shape.Height);
       end case;
-      -- 2D bar codes will have Y := Code.Box.Bottom - 2 * Shape.Bottom - 2 * Shape.Height and Height := 2 * Shape.Height
 
       Context.Fill_Rectangle (Rectangle => Rectangle);
    end Filled_Rectangle;
