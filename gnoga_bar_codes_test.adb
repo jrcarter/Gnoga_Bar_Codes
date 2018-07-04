@@ -53,13 +53,15 @@ begin -- Gnoga_Bar_Codes_Test
    View.Text_Alignment (Value => Gnoga.Gui.Element.Center);
    View.New_Line;
    Code_1D.Create (Parent => View, Width => Code_Width, Height => Code_Height);
-   Code_2D.Create (Parent => View, Width => 2 * Box_2D.Width, Height => 2 * Box_2D.Width);
+   View.New_Line;
+   Code_2D.Create (Parent => View, Width => 8 * Box_2D.Width, Height => 8 * Box_2D.Width);
    View.New_Line;
 
    Input.Create (Form => View, Label => "Text :", Width => 20);
 
    Gen.Create (Parent => View, Content => "Generate");
    Gen.On_Click_Handler (Handler => Generate'Unrestricted_Access);
+   View.On_Submit_Handler (Handler => Generate'Unrestricted_Access);
    View.New_Line;
 
    Quit.Create (Parent => View, Content => "Quit");

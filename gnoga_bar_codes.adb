@@ -29,14 +29,25 @@ package body Gnoga_Bar_Codes is
 
       Context : Gnoga.Gui.Element.Canvas.Context_2D.Context_2D_Type;
       Last    : Natural := Text'Last;
+      Scale   : Natural := 2;
    begin -- Generate
       Context.Get_Drawing_Context_2D (Canvas => Code.Canvas.all);
       Context.Fill_Color (Value => Gnoga.Types.Colors.White);
       Context.Fill_Rectangle (Rectangle => Rectangle);
 
       Truncate : loop
-         exit Truncate when Last < Text'First or else
-                            2 * Bar_Codes.Fitting (Kind, Text (Text'First .. Last) ).Width <= Rectangle.Width;
+         exit Truncate when Last < Text'First;
+
+         Fit := Bar_Codes.Fitting (Kind, Text (Text'First .. Last) );
+
+         case Kind is
+         when Bar_Codes.Code_128 =>
+            null;
+         when Bar_Codes.Code_QR =>
+            Scale := Code.Box.Width / Fit.Width;
+         end case;
+
+         exit Truncate when Scale * Fit.Width <= Rectangle.Width;
 
          Last := Last - 1;
       end loop Truncate;
